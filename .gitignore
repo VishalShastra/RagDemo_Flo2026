@@ -1,0 +1,7 @@
+.venv/
+.env
+chroma_db/
+chroma_db_advanced/
+.flashrank_cache/
+__pycache__/
+*.pyc

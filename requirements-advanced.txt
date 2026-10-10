@@ -1,0 +1,4 @@
+# Extra packages for the presenter-only advanced flow (hybrid search + reranking).
+-r requirements.txt
+rank_bm25==0.2.2
+flashrank==0.2.10
