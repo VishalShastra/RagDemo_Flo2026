@@ -1,15 +1,18 @@
 # Onboarding RAG Demo
 
-A local, GitHub-shareable onboarding assistant built with Langflow, Ollama, and Chroma. Use it to see the same question answered by an LLM with no company context and by a grounded RAG flow with citations to fictional Orbitly Systems documents.
+A local, GitHub-shareable onboarding assistant built with Langflow, Ollama, and Chroma. The current sample documents describe HarborPay Gateway, a fictional payment-gateway project. Use the HarborPay flow for role-specific onboarding answers with source references and visible retrieved evidence.
 
 The hands-on flow makes each stage visible: document loading, text splitting, embeddings, vector storage and retrieval, prompting, and generation. The project also demonstrates flow import/export, REST calls, and running a flow from Python without the Langflow UI.
 
 ## Flows
 
+- **HarborPay Project Onboarding RAG** (`flows/harborpay_onboarding_rag.json`): the flow for the current dataset. Helps QA engineers, developers, business analysts, and managers; includes a separate evidence output and an isolated Chroma index. See [the HarborPay guide](docs/harborpay-flow.md).
 - **Onboarding RAG - Before vs After** (`flows/onboarding_rag.json`): the attendee flow. It returns both an LLM-only answer and a document-grounded answer.
 - **Advanced Onboarding RAG** (`flows/advanced_onboarding_rag.json`): a presenter showcase with conversational memory, query rewriting and expansion, dense and BM25 hybrid retrieval, reranking, citations, and a grounding check. Install `requirements-advanced.txt` to use it; these extra dependencies are not needed for the hands-on flow.
 
 The included documents are fictional training data in `sample_data/`. Replace them only with content you are authorized to use.
+
+The original two flows and workshop runbook retain the previous company persona and HR questions. They are preserved as older teaching examples; those questions are no longer supported by the current dataset. Use the new HarborPay flow for this corpus.
 
 ## Quick Start
 
@@ -41,7 +44,7 @@ The full no-admin installation instructions for Windows, macOS, and Linux are in
 
    On Windows PowerShell, run `powershell -ExecutionPolicy Bypass -File .\scripts\check_prereqs.ps1` for the check. Open <http://127.0.0.1:7860>.
 
-4. Import `flows/onboarding_rag.json` from Langflow's Projects page, then open the flow in the Playground and ask a question. For the API and Python-only routes, see below.
+4. Import `flows/harborpay_onboarding_rag.json` from Langflow's Projects page, then open the flow in the Playground and ask a question. Inspect both the assistant answer and **Retrieved project evidence**. For the API and Python-only routes, see below.
 
 The hands-on flow needs Ollama running locally and the models above. The advanced flow additionally needs:
 
@@ -53,38 +56,38 @@ uv pip install -r requirements-advanced.txt
 
 Questions with answers grounded in the sample documents include:
 
-- How many PTO days do I get, and can I carry them over?
-- What VPN do I use and which authenticator app is approved?
-- What is the on-call rotation called and when does it start?
-- Can I deploy to production on Friday?
+- As a QA engineer, what is my first task and who reviews it?
+- What happens if an idempotency key is reused with a changed amount?
+- Who approves payment business rules?
+- Which signoffs does a manager need before release?
 
 ### REST API
 
 Create a Langflow API key in Settings, then call the named endpoint. The client scripts support Python, Bash, and PowerShell:
 
 ```bash
-uv run python scripts/call_api.py "How many PTO days do I get?"
-./scripts/call_api.sh "What VPN do I use?"
+FLOW_ID=harborpay-onboarding-rag uv run python scripts/call_api.py "Who approves payment business rules?"
 ```
 
 ```powershell
-.\scripts\call_api.ps1 "What VPN do I use?"
+$env:FLOW_ID = "harborpay-onboarding-rag"
+.\scripts\call_api.ps1 "Who approves payment business rules?"
 ```
 
-The basic and advanced endpoint names are `onboarding-rag` and `advanced-onboarding-rag`. For a raw `curl` example and standalone `lfx serve`, see [docs/build.md](docs/build.md#5-command-cheat-sheet).
+The new endpoint is `harborpay-onboarding-rag`; the older endpoints remain `onboarding-rag` and `advanced-onboarding-rag`. Client scripts default to the older basic endpoint unless `FLOW_ID` is set. For a raw `curl` example and standalone `lfx serve`, see [docs/build.md](docs/build.md#5-command-cheat-sheet).
 
 ### Run Without the Langflow UI
 
 Run the exported JSON flow directly as Python:
 
 ```bash
-uv run python scripts/run_flow_python.py "How many PTO days do I get?"
+uv run python scripts/run_flow_python.py "What should a new QA engineer learn first?" flows/harborpay_onboarding_rag.json
 ```
 
 The Python-defined flow can also be run with `lfx`:
 
 ```bash
-uv run lfx run flows/onboarding_rag.py "How many PTO days do I get?" --format text
+uv run lfx run flows/harborpay_onboarding_rag.py "What should a new QA engineer learn first?" --format text
 ```
 
 ## Repository Guide
@@ -99,6 +102,7 @@ uv run lfx run flows/onboarding_rag.py "How many PTO days do I get?" --format te
 | `requirements-advanced.txt` | Additional presenter-only retrieval and reranking dependencies                     |
 | `docs/design.md`            | Architecture, model choices, and OS-specific setup                                 |
 | `docs/build.md`             | 45-minute session runbook, demo questions, command reference, and troubleshooting  |
+| `docs/harborpay-flow.md`     | Current-dataset flow, configuration, role questions, and evidence checks            |
 | `docs/planning.md`          | Project plan and progress                                                          |
 
 To regenerate the JSON files after editing a Python flow:
@@ -107,10 +111,16 @@ To regenerate the JSON files after editing a Python flow:
 uv run python scripts/export_flows.py
 ```
 
+To regenerate only the new flow without changing the older exports:
+
+```bash
+uv run python scripts/export_flows.py --flow harborpay_onboarding_rag
+```
+
 ## Security and Local Data
 
 This demo is configured for local use. `.env`, virtual environments, Chroma databases, and the FlashRank cache are excluded by `.gitignore`; do not commit API keys, credentials, proprietary documents, or generated vector stores. `LANGFLOW_RESTRICT_LOCAL_FILE_ACCESS=false` is used for local access to the sample files. Do not expose a Langflow server with this setting on a shared or untrusted network.
 
 ## Validation Notes
 
-The project has been exercised on Linux, including the basic flow and API/Python paths. PowerShell scripts were checked in a Docker PowerShell environment. Real Windows and macOS non-admin setup and the timed 45-minute rehearsal have not yet been verified.
+The earlier flows were exercised on Linux, including API/Python paths. PowerShell scripts were checked in a Docker PowerShell environment. The new HarborPay JSON passed seven regression tests and six end-to-end Windows checks using local Ollama with `llama3.2:latest` and `nomic-embed-text:latest`; its default Qwen model and browser import were not exercised. See [HarborPay validation details](docs/harborpay-flow.md#validation-performed). Full Windows/macOS non-admin setup and the timed 45-minute rehearsal remain unverified.

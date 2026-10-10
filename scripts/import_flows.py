@@ -1,6 +1,6 @@
 """Import the flows in flows/*.json into a running local Langflow (catch-up helper for attendees).
 
-Usage:  python scripts/import_flows.py            # imports both flows
+Usage:  python scripts/import_flows.py            # imports all exported flows
         python scripts/import_flows.py --api-key  # also creates and prints a Langflow API key
         python scripts/import_flows.py --replace  # deletes previously imported copies first
 Works with the default single-user mode (LANGFLOW_AUTO_LOGIN=true). Otherwise import via the UI.

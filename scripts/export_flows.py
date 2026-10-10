@@ -1,8 +1,10 @@
 """Generate Langflow-importable JSON files from the Python flow definitions in flows/*.py.
 
 Usage (from the project root):  python scripts/export_flows.py
+                               python scripts/export_flows.py --flow harborpay_onboarding_rag
 """
 
+import argparse
 import importlib.util
 import json
 import sys
@@ -15,6 +17,8 @@ FLOWS = {
     "'Without RAG' vs 'With RAG' comparison. Local Ollama models + Chroma.",
     "advanced_onboarding_rag": "Showcase: conversational memory, query rewriting, multi-query, hybrid dense (MMR) + "
     "sparse (BM25) search with RRF, cross-encoder reranking, citations and an LLM-as-judge grounding gate.",
+    "harborpay_onboarding_rag": "HarborPay payment-gateway project onboarding for QA, developers, BAs and managers. "
+    "Local Ollama + isolated Chroma store, source-grounded answers and visible retrieved evidence.",
 }
 
 
@@ -109,5 +113,9 @@ def export(name: str, description: str) -> Path:
 
 
 if __name__ == "__main__":
-    for flow_name, flow_description in FLOWS.items():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--flow", choices=FLOWS, help="Export only this flow; by default export all flows.")
+    args = parser.parse_args()
+    selected = {args.flow: FLOWS[args.flow]} if args.flow else FLOWS
+    for flow_name, flow_description in selected.items():
         print(f"Exported {export(flow_name, flow_description).relative_to(ROOT)}", file=sys.stderr)
